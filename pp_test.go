@@ -2,7 +2,6 @@
 package main
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -40,17 +39,4 @@ func TestSpec(t *testing.T) {
 			})
 		})
 	})
-}
-
-// --- HELPERS ---
-func fetchEnvVars(t *testing.T) (clientId, secret string) {
-	clientId = os.Getenv("PAYPAL_TEST_CLIENTID")
-	if len(clientId) <= 0 {
-		t.Fatalf("Für den Test muss die ENV-Variable PAYPAL_TEST_CLIENTID gesetzt sein!")
-	}
-	secret = os.Getenv("PAYPAL_TEST_SECRET")
-	if len(secret) <= 0 {
-		t.Fatalf("Für den Test muss die ENV-Variable PAYPAL_TEST_SECRET gesetzt sein!")
-	}
-	return
 }
