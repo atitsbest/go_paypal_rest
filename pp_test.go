@@ -1,4 +1,4 @@
-// Package main provides ...
+
 package main
 
 import (
@@ -14,22 +14,22 @@ func TestSpec(t *testing.T) {
 		var token string
 		var payment *PaymentResponse
 
-		Convey("When I request a token", func() {
+		Convey("When I request a token...", func() {
 			token, err = GetToken(clientId, secret)
 
-			Convey("Then I should get a access-token", func() {
+			Convey("then I should get an access-token", func() {
 				So(token, ShouldNotBeNil)
 				So(err, ShouldBeNil)
 			})
 
-			Convey("And I request a simple payment", func() {
+			Convey("When I request a simple payment...", func() {
 				payment, err = CreatePayPalPayment(
 					token,
 					1.00, 0.20, 2.00, "USD",
-					"Die Dinge die ich eingekauft habe.",
+					"The products that I have purchased:",
 					"http://lillypark.com/ok", "http://lillypark.com/cancel")
 
-				Convey("Then I should get a created payment ready for authorization", func() {
+				Convey("then I should get a created payment which is ready for authorization", func() {
 					So(err, ShouldBeNil)
 					So(payment, ShouldNotBeNil)
 

@@ -1,4 +1,4 @@
-# PayPal Rest Api in Go
+# PayPal Rest API in Go
 
 ## Tests
 
@@ -9,4 +9,4 @@ The Tests need your PayPal credentials (clientId ans secret) in the env vars:
 
 ## Status
 
-Right now it is just a technical test.
+This fork is intended to make a test PayPal transaction which will be used in another project.
