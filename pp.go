@@ -1,4 +1,4 @@
-// Package main provides ...
+
 package main
 
 import (
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"testing"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -17,10 +18,10 @@ import (
 
 type (
 	TokenResponse struct {
-		Scope        string // "https://api.paypal.com/v1/payments/.* https://api.paypal.com/v1/vault/credit-card https://api.paypal.com/v1/vault/credit-card/.*",
-		Access_token string // "EEwJ6tF9x5WCIZDYzyZGaz6Khbw7raYRIBV_WxVvgmsG",
-		Token_type   string // "Bearer",
-		App_id       string // "APP-6XR95014BA15863X",
+		Scope        string // "https://api.paypal.com/v1/payments/.* https://api.paypal.com/v1/vault/credit-card https://api.paypal.com/v1/vault/credit-card/.*"
+		Access_token string // "EEwJ6tF9x5WCIZDYzyZGaz6Khbw7raYRIBV_WxVvgmsG"
+		Token_type   string // "Bearer"
+		App_id       string // "APP-6XR95014BA15863X"
 		Expires_in   int    // 28800
 	}
 
@@ -37,7 +38,7 @@ type (
 
 	PaymentAmount struct {
 		Total    string               `json:"total"`    // "3.20"
-		Currency string               `json:"currency"` // EUR/USD/...
+		Currency string               `json:"currency"` // EUR, USD, etc
 		Details  PaymentAmountDetails `json:"details"`
 	}
 
@@ -62,15 +63,15 @@ type (
 	// --- PAYMENT RESPONSE ---
 
 	PaymentLink struct {
-		Href   string `json:"href"`   // "https://api.sandbox.paypal.com/v1/payments/payment/PAY-6RV70583SB702805EKEYSZ6Y",
-		Rel    string `json:"rel"`    // "self",
+		Href   string `json:"href"`   // "https://api.sandbox.paypal.com/v1/payments/payment/PAY-6RV70583SB702805EKEYSZ6Y"
+		Rel    string `json:"rel"`    // "self"
 		Method string `json:"method"` // "GET"
 	}
 
 	PaymentResponse struct {
-		Id               string    // "PAY-6RV70583SB702805EKEYSZ6Y",
-		CreateTime       time.Time `json:"create_time`  // 2013-03-01T22:34:35Z",
-		UpdateTime       time.Time `json:"update_time"` // 2013-03-01T22:34:36Z",
+		Id               string    // "PAY-6RV70583SB702805EKEYSZ6Y"
+		CreateTime       time.Time `json:"create_time`  // 2013-03-01T22:34:35Z"
+		UpdateTime       time.Time `json:"update_time"` // 2013-03-01T22:34:36Z"
 		State            string    // created
 		Intent           string    // sale
 		Payer            PaymentPayer
@@ -84,9 +85,9 @@ type (
 	}
 
 	LookupSaleResponse struct {
-		Id            string    // "36C38912MN9658832",
-		CreateTime    time.Time `json:"create_time`  // 2013-03-01T22:34:35Z",
-		UpdateTime    time.Time `json:"update_time"` // 2013-03-01T22:34:36Z",
+		Id            string    // "36C38912MN9658832"
+		CreateTime    time.Time `json:"create_time`  // 2013-03-01T22:34:35Z"
+		UpdateTime    time.Time `json:"update_time"` // 2013-03-01T22:34:36Z"
 		State         string    // created
 		Amount        PaymentAmount
 		ParentPayment string `json:"parent_payment"`
@@ -117,7 +118,7 @@ func GetToken(clientId string, secret string) (string, error) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(clientId, secret)
 
-	fmt.Print("Request absetzen...")
+	fmt.Print("Complete request...")
 	client := new(http.Client)
 	res, err := client.Do(req)
 	if err != nil {
@@ -146,8 +147,7 @@ func CreatePayPalPayment(
 
 	total := subtotal + tax + shipping
 
-	// Request zusammenbauen.
-
+	// Assemble Request
 	preq := PaymentRequest{
 		Intent: "sale",
 		RedirectUrls: PaymentUrls{
@@ -173,8 +173,8 @@ func CreatePayPalPayment(
 		},
 	}
 
-	// Http-Request zusammenbauen.
-	fmt.Print("Request erstellen...")
+	// Assemble Http-Request
+	fmt.Print("Create request...")
 	data, err := json.Marshal(preq)
 	if err != nil {
 		return nil, err
@@ -193,21 +193,21 @@ func CreatePayPalPayment(
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Authorization", "Bearer "+token)
 
-	fmt.Print("Request absetzen...")
+	fmt.Print("Complete request...")
 	client := new(http.Client)
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Http.Response einlesen.
+	// Read in Http.Response
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Http-Response parsen.
+	// Parse Http-Response
 	if res.StatusCode == 201 {
 		ppres := &PaymentResponse{}
 		err = json.Unmarshal(body, &ppres)
@@ -220,7 +220,7 @@ func CreatePayPalPayment(
 	return nil, errors.New(fmt.Sprintf("%s: %s", res.Status, body))
 }
 
-// Macht aus einer authorisierten Bezahlung einen Verkauf.
+// Create a purchase from an authorized payment
 func ExecuteApprovedPayment(token string, payerId string, paymentId string) (*PaymentResponse, error) {
 	url := fmt.Sprintf("https://api.sandbox.paypal.com/v1/payments/payment/%s/execute", paymentId)
 	body := strings.NewReader("{ \"payer_id\": \"" + payerId + "\" }")
@@ -251,7 +251,7 @@ func ExecuteApprovedPayment(token string, payerId string, paymentId string) (*Pa
 	return nil, errors.New(res.Status)
 }
 
-// Liefert die Details zu einer abgeschlossenen Bezahlung.
+// Provides the detauls of a successful payment
 func LookupSale(token string, transactionId string) (*LookupSaleResponse, error) {
 	url := fmt.Sprintf("https://api.sandbox.paypal.com/v1/payments/sale/%s", transactionId)
 	req, err := http.NewRequest("GET", url, nil)
@@ -281,7 +281,7 @@ func LookupSale(token string, transactionId string) (*LookupSaleResponse, error)
 	return nil, errors.New(res.Status)
 }
 
-// Wandelt einen float64 in einen String um, wie Paypal ihn braucht.
+// Cast float64 to String for PayPal usage
 func toPayPalPrice(amount float64) string {
 	return fmt.Sprintf("%.2f", amount)
 }
@@ -291,11 +291,24 @@ func fetchEnvVars() (clientId, secret string) {
 	clientId = os.Getenv("PAYPAL_TEST_CLIENTID")
 
 	if len(clientId) <= 0 {
-		fmt.Errorf("Für den Test muss die ENV-Variable PAYPAL_TEST_CLIENTID gesetzt sein!")
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_CLIENTID ENV variable!")
 	}
 	secret = os.Getenv("PAYPAL_TEST_SECRET")
 	if len(secret) <= 0 {
-		fmt.Errorf("Für den Test muss die ENV-Variable PAYPAL_TEST_SECRET gesetzt sein!")
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_SECRET ENV variable!")
+	}
+	return
+}
+
+func fetchEnvVarsParam(t *testing.T) (clientId, secret string) {
+	clientId = os.Getenv("PAYPAL_TEST_CLIENTID")
+
+	if len(clientId) <= 0 {
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_CLIENTID ENV variable!")
+	}
+	secret = os.Getenv("PAYPAL_TEST_SECRET")
+	if len(secret) <= 0 {
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_SECRET ENV variable!")
 	}
 	return
 }
@@ -320,45 +333,45 @@ func main() {
 		payment, err = CreatePayPalPayment(
 			token,
 			1.00, 0.20, 2.00, "USD",
-			"Die Dinge die ich eingekauft habe.",
-			"http://109.74.200.123:3000/ok", "http://109.74.200.123:3000/cancel")
+			"The products that I have purchased:",
+			"http://localhost:3000/ok", "http://localhost:3000/cancel")
 		if err != nil {
 			panic(err)
 		}
-		// Weiter zu PayPal.
+		// Redirect to PayPal.
 		url, err := payment.ApprovalUrl()
 		if err != nil {
 			panic(err)
 		}
 		http.Redirect(res, req, url, http.StatusFound)
 	})
-	m.Get("/cancel", func() string { return "Bezahlung abgebrochen" })
+	m.Get("/cancel", func() string { return "Payment cancelled" })
 	m.Get("/ok", func(res http.ResponseWriter, req *http.Request) string {
 		params := req.URL.Query()
 		// token := params["token"][0]
 		payerId := params["PayerID"][0]
-		// Bezahlung durchführen.
+		// Execute Payment
 		sale, err := ExecuteApprovedPayment(token, payerId, payment.Id)
 		if err != nil {
 			panic(err)
 		}
 
 		// if sale.State != "approved" {
-		// 	panic(errors.New(fmt.Sprintf("Zahlung ist nicht genehmigt!(%s)", sale.State)))
+		// 	panic(errors.New(fmt.Sprintf("Payment is not approved! (%s)", sale.State)))
 		// }
 
-		// Bezahlung überprüfen.
+		// Verify payment
 		sr, err := LookupSale(token, sale.RelatedResources[0].Sale.Id)
 		if err != nil {
 			panic(err)
 		}
 
 		if sr.State != "completed" {
-			panic(errors.New(fmt.Sprintf("Zahlung ist nicht genehmigt! (%s)", sr.State)))
+			panic(errors.New(fmt.Sprintf("Payment is not approved! (%s)", sr.State)))
 		}
 
-		// TODO: Überprüfen, ob das Geld auch wirklich überwiesen wurde.
-		return "Bezahlt!"
+		// TODO: Verify that the money has actually been transferred successfully.
+		return "Money transferred successfully!"
 	})
 
 	m.Run()
