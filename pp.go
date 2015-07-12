@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"testing"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -299,6 +300,19 @@ func fetchEnvVars() (clientId, secret string) {
 	return
 }
 
+func fetchEnvVarsParam(t *testing.T) (clientId, secret string) {
+	clientId = os.Getenv("PAYPAL_TEST_CLIENTID")
+
+	if len(clientId) <= 0 {
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_CLIENTID ENV variable!")
+	}
+	secret = os.Getenv("PAYPAL_TEST_SECRET")
+	if len(secret) <= 0 {
+		fmt.Errorf("For testing you must first set your PAYPAL_TEST_SECRET ENV variable!")
+	}
+	return
+}
+
 func main() {
 	var (
 		clientId string
@@ -320,7 +334,7 @@ func main() {
 			token,
 			1.00, 0.20, 2.00, "USD",
 			"The products that I have purchased:",
-			"http://109.74.200.123:3000/ok", "http://109.74.200.123:3000/cancel")
+			"http://localhost:3000/ok", "http://localhost:3000/cancel")
 		if err != nil {
 			panic(err)
 		}
