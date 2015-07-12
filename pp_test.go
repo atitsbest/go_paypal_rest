@@ -9,7 +9,7 @@ import (
 
 func TestSpec(t *testing.T) {
 	Convey("Given some paypal credentials (ENV)", t, func() {
-		clientId, secret := fetchEnvVars(t)
+		clientId, secret := fetchEnvVarsParam(t)
 		var err error
 		var token string
 		var payment *PaymentResponse
